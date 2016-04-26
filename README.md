@@ -19,6 +19,7 @@ Ansible role to install, configure and run consul-template as a service.
 
   vars:
     consul_template_version: v0.12.1
+    consul_template_consul_agent: "<consulhost:consulport>"
     
   roles:
     - role: wunzeco.consul-template
