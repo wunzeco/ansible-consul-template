@@ -21,7 +21,6 @@
 - name: Ensure consul-template pid directory exists
   file: dest={{ consul_template_bin_dir }} mode=0755 state=directory
 
-- debug: msg="{{ consul_template_bin_dir }}/consul-template"
 - name: Verify consul-template installed
   shell: >
       {{ consul_template_bin_dir }}/consul-template -version || true
