@@ -1,0 +1,94 @@
+---
+consul_template_task: install
+
+consul_template_user: consul-template
+consul_template_group: "{{ consul_template_user }}"
+
+consul_template_bin_dir:  "/usr/local/bin"
+consul_template_log_dir:  "/var/log/consul-template"
+consul_template_work_dir: "/opt/consul-template"
+consul_template_conf_dir: "{{ consul_template_work_dir }}/conf"
+
+consul_template_version: 0.12.1
+consul_template_pkg:     "consul-template_{{ consul_template_version }}_linux_amd64.zip"
+consul_template_pkg_url: "https://releases.hashicorp.com/consul-template/{{ consul_template_version }}/{{ consul_template_pkg }}"
+
+consul_template_checksum_file:     "consul-template_{{ consul_template_version }}_SHA256SUMS"
+consul_template_checksum_file_url: "https://releases.hashicorp.com/consul-template/{{ consul_template_version }}/{{ consul_template_checksum_file }}"
+
+##########
+##  Config
+consul_template_consul_agent: "127.0.0.1:8500"
+consul_template_token:               # Consul API token
+consul_template_retry:     "5s"      # Default is 5s
+consul_template_reap:      false
+consul_template_max_stale:           # The maximum staleness of a query. Default is 1s
+consul_template_log_level: "info"    # debug, info, warn, err
+consul_template_wait:                # e.g. "5s:10s". The minimum and maximum amount of time to wait for 
+                                     # the cluster to reach a consistent state before rendering a template
+consul_template_vault:  {}           # See example below
+consul_template_auth:   {}           # See example below
+consul_template_ssl:    {}           # See example below
+consul_template_syslog: {}           # See example below
+consul_template_deduplicate: {}      # See example below
+
+consul_template_template: {}         # See example below
+consul_template_template_list: []    # See example below
+
+
+#########################
+##  Configuration Example
+##
+## consul_template_template:
+##   source: "/path/on/disk/to/template.ctmpl"
+##   destination: "/path/on/disk/where/template/will/render.txt"
+##   command: "restart service foo"
+##   command_timeout: "60s"
+##   perms: "0600"
+##   backup: true
+## 
+## # consul_template_list to be implemented soon!!!
+## #consul_template_template_list:
+## #  - source: "/path/on/disk/to/templateOne.ctmpl"
+## #    destination: "/path/on/disk/where/template/will/renderOne.txt"
+## #    command: "restart service foo"
+## #    command_timeout: "60s"
+## #    perms: "0600"
+## #    backup: true
+## #  - source: "/path/on/disk/to/templateTwo.ctmpl"
+## #    destination: "/path/on/disk/where/template/will/renderTwo.txt"
+## #    command: "restart service foo"
+## #    command_timeout: "60s"
+## #    perms: "0600"
+## #    backup: true
+## 
+## consul_template_vault:
+##   address: "https://vault.service.consul:8200"
+##   token:   "abcd1234"
+##   renew:   true
+##   ssl: 
+##     enabled: true
+##     verify:  false
+##     cert:    "/path/to/client/cert"
+##     key:     "/path/to/client/key"
+##     ca_cert: "/path/to/ca"
+## 
+## consul_template_auth:
+##   enabled:  true
+##   username: test
+##   password: test
+## 
+## consul_template_ssl:
+##   enabled: true
+##   verify:  false
+##   cert:    "/path/to/client/cert"
+##   key:     "/path/to/client/key"
+##   ca_cert: "/path/to/ca"
+## 
+## consul_template_syslog:
+##   enabled:  true
+##   facility: "LOCAL5"
+## 
+## consul_template_deduplicate:
+##   enabled:  true
+##   prefix: "consul-template/dedup/"

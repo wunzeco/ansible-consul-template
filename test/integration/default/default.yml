@@ -1,0 +1,73 @@
+---
+- name: Consul-Docker play
+  hosts: test-kitchen
+
+  vars:
+    consul_datacenter:  kitchenDC
+    consul_encrypt_key: '74d+D4bl59FeKo0r+U5lSA=='
+    consul_primary_node: localhost
+    consul_nodes:
+      - "{{ ansible_default_ipv4.address }}"
+
+    registrator_service_registry_backend: consul
+    registrator_service_registry_host: "{{ ansible_default_ipv4.address }}"
+    registrator_service_registry_port: 8500
+
+    nginx_docker_consul_host: "{{ ansible_default_ipv4.address }}"
+    nginx_docker_consul_port: 8500
+
+  roles:
+    - wunzeco.consul
+    - wunzeco.docker
+    - wunzeco.registrator
+
+  post_tasks:
+    - name: Install curl
+      apt: name=curl state=present
+
+    - name: Start jenkins container
+      docker:
+        name:  jenkins
+        image: "jenkins:1.651.1"
+        state: running
+        publish_all_ports: true
+        env:
+          SERVICE_NAME: jenkins
+
+    - name: Delay a few seconds to allow jenkins container start
+      pause: seconds=10
+
+
+- name: Consul-Template play
+  hosts: test-kitchen
+
+  pre_tasks:
+    - name: Create nginx consul templates directory
+      file: path=/data/nginx/templates recurse=yes state=directory
+
+    - name: Copy nginx include template config for jenkins
+      copy: 
+        src:  roles/ansible-consul-template/test/files/jenkins-8080-include.conf.ctmpl
+        dest: /data/nginx/templates/jenkins-8080-include.conf.ctmpl
+
+    - name: Copy nginx upstream template config for jenkins
+      copy: 
+        src:  roles/ansible-consul-template/test/files/jenkins-8080-upstream.conf.ctmpl
+        dest: /data/nginx/templates/jenkins-8080-upstream.conf.ctmpl
+
+  roles:
+    - role: ansible-consul-template 
+      consul_template_task: install 
+      consul_template_version: 0.12.1 
+
+    - role: ansible-consul-template
+      consul_template_task: template_config
+      consul_template_template: 
+        source: "/data/nginx/templates/jenkins-8080-include.conf.ctmpl"
+        destination: "/data/nginx/includes/common/jenkins-8080.conf"
+
+    - role: ansible-consul-template
+      consul_template_task: template_config
+      consul_template_template: 
+        source: "/data/nginx/templates/jenkins-8080-upstream.conf.ctmpl"
+        destination: "/data/nginx/upstream/jenkins-8080.conf"

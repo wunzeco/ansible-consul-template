@@ -1,0 +1,9 @@
+---
+
+- name: consul-template install
+  include: install.yml
+  when: consul_template_task == 'install'
+
+- name: consul-template template create
+  include: template-config.yml
+  when: consul_template_task == 'template_config'

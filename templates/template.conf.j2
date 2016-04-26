@@ -1,0 +1,20 @@
+template {
+  source = "{{ consul_template_template.source }}"
+  destination = "{{ consul_template_template.destination }}"
+
+{% if consul_template_template.command|default(false) %}
+  command = "{{ consul_template_template.command }}"
+{% endif -%}
+
+{% if consul_template_template.command_timeout|default(false) %}
+  command_timeout = "{{ consul_template_command_timeout }}"
+{% endif -%}
+
+{% if consul_template_template.perms|default(false) %}
+  perms = {{ consul_template_template.perms }}
+{% endif -%}
+
+{% if consul_template_template.backup|default(false) %}
+  backup = {{ consul_template_template.backup|bool|lower }}
+{% endif -%}
+}

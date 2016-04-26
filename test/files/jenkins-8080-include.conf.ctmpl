@@ -1,0 +1,8 @@
+{{if service "jenkins-8080" "any" }}
+location /jenkins {
+  rewrite    /jenkins(.*)  $1 break;
+  proxy_pass http://jenkins-8080;
+}
+{{else}}
+# No service object for jenkins-8080 found
+{{end}}

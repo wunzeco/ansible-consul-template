@@ -1,0 +1,76 @@
+consul = "{{ consul_template_consul_agent|default('127.0.0.1:8500') }}"
+
+{% if consul_template_token|default(false) %}
+token = "{{ consul_template_token }}"
+{% endif -%}
+
+{% if consul_template_retry|default(false) %}
+retry = "{{ consul_template_retry }}"
+{% endif -%}
+
+reap = {{ consul_template_reap|bool|lower }}
+{% if consul_template_max_stale|default(false) %}
+max_stale = "{{ consul_template_max_stale }}"
+{% endif -%}
+
+log_level = "{{ consul_template_log_level }}"
+pid_file = "{{ consul_template_work_dir }}/consul-template.pid"
+
+{% if consul_template_wait|default(false) %}
+wait = "{{ consul_template_wait }}"
+{% endif -%}
+
+{% if consul_template_vault|default(false) %}
+vault {
+  address = "{{ consul_template_vault.address }}"
+  token = "{{ consult_template_vault.token }}"
+  renew = {{ consult_template_vault.token|bool|lower }}
+
+{% if consul_template_vault.ssl|default(false) %}
+  ssl {
+    enabled = {{ consul_template_vault.ssl.enabled|bool|lower }}
+    verify = {{ consul_template_vault.ssl.verify|bool|lower }}
+    cert = "{{ consul_template_vault.ssl.cert }}"
+{% if consul_template_vault.ssl.key|default(false) %}
+    key = "{{ consul_template_vault.ssl.key }}"
+{% endif %}
+    ca_cert = "{{ consul_template_vault.ssl.ca_cert }}"
+  }
+{% endif -%}
+
+}
+{% endif -%}
+
+{% if consul_template_auth %}
+auth {
+  enabled  = {{ consul_template_auth.enabled|bool|lower }}
+  username = "{{ consul_template_auth.username }}"
+  password = "{{ consul_template_auth.password }}"
+}
+{% endif -%}
+
+{% if consul_template_ssl %}
+ssl {
+  enabled = {{ consul_template_ssl.enabled|bool|lower }}
+  verify = {{ consul_template_ssl.verify|bool|lower }}
+  cert = "{{ consul_template_ssl.cert }}"
+{% if consul_template_ssl.key|default(false) %}
+  key = "{{ consul_template_ssl.key }}"
+{% endif %}
+  ca_cert = "{{ consul_template_ssl.ca_cert }}"
+}
+{% endif -%}
+
+{% if consul_template_syslog %}
+syslog {
+  enabled = {{ consul_template_syslog.enabled|bool|lower }}
+  facility = "{{ consul_template_syslog.facility|default('LOCAL5') }}"
+}
+{% endif -%}
+
+{% if consul_template_syslog %}
+deduplicate {
+  enabled = {{ consul_template_deduplicate.enabled|bool|lower }}
+  prefix = "{{ consul_template_deduplicate.prefix|default('consul-template/dedup/') }}"
+}
+{% endif -%}

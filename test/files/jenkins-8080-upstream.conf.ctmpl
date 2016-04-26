@@ -1,0 +1,9 @@
+{{if service "jenkins-8080" "any" }}
+upstream jenkins-8080 {
+    {{range service "jenkins-8080" "any" }}
+    server  {{.Address}}:{{.Port}};
+    {{end}}
+}
+{{else}}
+# No service object for jenkins-8080 found
+{{end}}
