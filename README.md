@@ -11,7 +11,6 @@ Ansible role to install, configure and run consul-template as a service.
 
 ```
 - hosts: myhost
-  
 
   roles:
     - role: wunzeco.consul-template
