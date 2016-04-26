@@ -6,17 +6,6 @@ Ansible role to install, configure and run consul-template as a service.
 
 ## Example
 
-### Install and start consul-template as a service
-
-```
-- hosts: myhost
-
-  roles:
-    - role: wunzeco.consul-template
-      consul_template_task: install
-      consul_template_version: 0.12.1 
-```
-
 ### Install and start consul-template as a service, and ADD template configurations
 
 > **NOTE:**
@@ -28,19 +17,16 @@ Ansible role to install, configure and run consul-template as a service.
 ```
 - hosts: myhost
 
+  vars:
+    consul_template_version: v0.12.1
+    
   roles:
     - role: wunzeco.consul-template
-      consul_template_task: install
-      consul_template_version: 0.12.1 
-
-    - role: wunzeco.consul-template
-      consul_template_task: template_config
       consul_template_template:
         source: "/data/nginx/templates/jenkins-8080-include.conf.ctmpl"
         destination: "/data/nginx/includes/common/jenkins-8080.conf"
 
     - role: wunzeco.consul-template
-      consul_template_task: template_config
       consul_template_template:
         source: "/data/nginx/templates/jenkins-8080-upstream.conf.ctmpl"
         destination: "/data/nginx/upstream/jenkins-8080.conf"

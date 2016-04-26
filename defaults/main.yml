@@ -1,5 +1,4 @@
 ---
-consul_template_task: install
 
 consul_template_bin_dir:  "/usr/local/bin"
 consul_template_pid_dir:  "/var/run"

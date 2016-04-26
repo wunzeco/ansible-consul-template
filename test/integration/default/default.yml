@@ -56,18 +56,12 @@
         dest: /data/nginx/templates/jenkins-8080-upstream.conf.ctmpl
 
   roles:
-    - role: ansible-consul-template 
-      consul_template_task: install 
-      consul_template_version: 0.12.1 
-
     - role: ansible-consul-template
-      consul_template_task: template_config
       consul_template_template: 
         source: "/data/nginx/templates/jenkins-8080-include.conf.ctmpl"
         destination: "/data/nginx/includes/common/jenkins-8080.conf"
 
     - role: ansible-consul-template
-      consul_template_task: template_config
       consul_template_template: 
         source: "/data/nginx/templates/jenkins-8080-upstream.conf.ctmpl"
         destination: "/data/nginx/upstream/jenkins-8080.conf"
