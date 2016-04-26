@@ -1,9 +1,61 @@
 ---
 
-- name: consul-template install
-  include: install.yml
-  when: consul_template_task == 'install'
+- name: Install unzip
+  apt: name=unzip state=present
 
+- name: Create consul-template directory structure
+  file:
+    dest:  "{{ item }}"
+    owner: root
+    group: root
+    mode:  0755
+    state: directory
+  with_items:
+    - "{{ consul_template_work_dir }}"
+    - "{{ consul_template_conf_dir }}"
+    - "{{ consul_template_log_dir }}"
+
+- name: Ensure consul-template bin directory exists
+  file: dest={{ consul_template_bin_dir }} mode=0755 state=directory
+
+- name: Ensure consul-template pid directory exists
+  file: dest={{ consul_template_bin_dir }} mode=0755 state=directory
+
+- debug: msg="{{ consul_template_bin_dir }}/consul-template"
+- name: Verify consul-template installed
+  shell: >
+      {{ consul_template_bin_dir }}/consul-template -version ##|| true
+  register: version
+
+- debug: msg="{{ version.stderr }}"
+
+- name: Set installed variable if version of consul-template is installed
+  set_fact: installed=true
+  when:  "{{ 'v' + consul_template_version in version.stderr.split(' ') }}"
+
+- name: consul-template package install
+  include: install.yml
+  when: not installed|default(false)
+
+- name: Create consul-template init script
+  template:
+    src:   consul-template.init.j2
+    dest:  /etc/init.d/consul-template
+    owner: root
+    group: root
+    mode:  0755
+  notify: Restart consul-template
+
+- name: Create consult-template defaults config file
+  template:
+    src:   defaults.conf.j2
+    dest:  "{{ consul_template_conf_dir }}/defaults.conf"
+    owner: root
+    group: root
+    mode:  0644
+  notify: Restart consul-template
+
+- name: Start consul-template
+  service: name=consul-template state=started
 - name: consul-template template create
   include: template-config.yml
-  when: consul_template_task == 'template_config'
