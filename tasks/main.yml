@@ -24,7 +24,7 @@
 - debug: msg="{{ consul_template_bin_dir }}/consul-template"
 - name: Verify consul-template installed
   shell: >
-      {{ consul_template_bin_dir }}/consul-template -version ##|| true
+      {{ consul_template_bin_dir }}/consul-template -version || true
   register: version
 
 - debug: msg="{{ version.stderr }}"
