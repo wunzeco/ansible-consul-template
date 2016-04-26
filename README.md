@@ -1,8 +1,7 @@
-CONSUL-TEMPLATE
-======
+consul-template
+==============
 
 Ansible role to install, configure and run consul-template as a service.
-
 
 
 ## Example
@@ -46,6 +45,7 @@ Ansible role to install, configure and run consul-template as a service.
         source: "/data/nginx/templates/jenkins-8080-upstream.conf.ctmpl"
         destination: "/data/nginx/upstream/jenkins-8080.conf"
 ```
+
 
 ## Dependencies
 
