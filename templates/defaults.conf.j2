@@ -14,7 +14,7 @@ max_stale = "{{ consul_template_max_stale }}"
 {% endif -%}
 
 log_level = "{{ consul_template_log_level }}"
-pid_file = "{{ consul_template_work_dir }}/consul-template.pid"
+pid_file = "{{ consul_template_pid_dir }}/consul-template.pid"
 
 {% if consul_template_wait|default(false) %}
 wait = "{{ consul_template_wait }}"

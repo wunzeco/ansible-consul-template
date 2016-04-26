@@ -15,7 +15,7 @@
   template:
     src:   template.conf.j2
     dest:  "{{ consul_template_conf_dir }}/template-{{ tmplcfg }}"
-    owner: "{{ consul_template_user }}"
-    group: "{{ consul_template_group }}"
+    owner: root
+    group: root
     mode:  0644
   notify: Restart consul-template

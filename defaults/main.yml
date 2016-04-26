@@ -1,10 +1,8 @@
 ---
 consul_template_task: install
 
-consul_template_user: consul-template
-consul_template_group: "{{ consul_template_user }}"
-
 consul_template_bin_dir:  "/usr/local/bin"
+consul_template_pid_dir:  "/var/run"
 consul_template_log_dir:  "/var/log/consul-template"
 consul_template_work_dir: "/opt/consul-template"
 consul_template_conf_dir: "{{ consul_template_work_dir }}/conf"
