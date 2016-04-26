@@ -56,5 +56,7 @@
 
 - name: Start consul-template
   service: name=consul-template state=started
+
 - name: consul-template template create
   include: template-config.yml
+  when: consul_template_template
