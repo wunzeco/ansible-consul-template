@@ -48,6 +48,18 @@
     owner: root
     group: root
     mode:  0755
+  when: ansible_os_family|lower == 'debian'
+  notify: Restart consul-template
+
+- name: Create consul-template systemd service script
+  template:
+    src:   consul-template.service.j2
+    dest:  /usr/lib/systemd/system/consul-template.service
+    owner: root
+    group: root
+    mode:  0755
+  register: systemd
+  when: ansible_os_family|lower == 'redhat'
   notify: Restart consul-template
 
 - name: Create consult-template defaults config file
@@ -59,8 +71,12 @@
     mode:  0644
   notify: Restart consul-template
 
+- name: Reload systemd manager configuration
+  command: systemctl daemon-reload
+  when: systemd|changed
+
 - name: Start consul-template
-  service: name=consul-template state=started
+  service: name=consul-template enabled=yes state=started
 
 - name: consul-template template create
   include: template-config.yml

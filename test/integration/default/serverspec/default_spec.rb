@@ -25,10 +25,20 @@ describe file("#{consul_template_bin_dir}/consul-template") do
   it { should be_owned_by 'root' }
 end
 
-describe file('/etc/init.d/consul-template') do
-  it { should be_file }
-  it { should be_mode 755 }
-  it { should be_owned_by 'root' }
+if os[:family] =~ /ubuntu|debian/
+  describe file('/etc/init.d/consul-template') do
+    it { should be_file }
+    it { should be_mode 755 }
+    it { should be_owned_by 'root' }
+  end
+end
+
+if os[:family] =~ /centos|redhat/
+  describe file('/usr/lib/systemd/system/consul-template.service') do
+    it { should be_file }
+    it { should be_mode 755 }
+    it { should be_owned_by 'root' }
+  end
 end
 
 describe file("#{consul_template_conf_dir}/defaults.conf") do

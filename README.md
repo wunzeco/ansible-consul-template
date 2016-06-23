@@ -37,3 +37,6 @@ Ansible role to install, configure and run consul-template as a service.
 ## Dependencies
 
 none
+
+## Outstanding
+- redirect consul-template logs to file for service started by systemd
