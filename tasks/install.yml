@@ -25,3 +25,4 @@
     dest: "{{ consul_template_bin_dir }}"
     copy: no
   when: not installed|default(false)
+  notify: Restart consul-template
