@@ -1,7 +1,12 @@
 ---
 
-- name: Install unzip
+- name: Install unzip | Debian
   apt: name=unzip state=present
+  when: ansible_os_family|lower == 'debian'
+
+- name: Install unzip | RedHat
+  yum: name=unzip state=present
+  when: ansible_os_family|lower == 'redhat'
 
 - name: Create consul-template directory structure
   file:

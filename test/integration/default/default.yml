@@ -22,8 +22,13 @@
     - wunzeco.registrator
 
   post_tasks:
-    - name: Install curl
+    - name: Install curl | Debian
       apt: name=curl state=present
+      when: ansible_os_family|lower == 'debian'
+
+    - name: Install curl | RedHat
+      yum: name=curl state=present
+      when: ansible_os_family|lower == 'redhat'
 
     - name: Start jenkins container
       docker:
@@ -33,9 +38,11 @@
         publish_all_ports: true
         env:
           SERVICE_NAME: jenkins
+      register: j
 
     - name: Delay a few seconds to allow jenkins container start
       pause: seconds=10
+      when: j|changed
 
 
 - name: Consul-Template play

@@ -6,7 +6,7 @@ consul_template_log_dir:  "/var/log/consul-template"
 consul_template_work_dir: "/opt/consul-template"
 consul_template_conf_dir: "{{ consul_template_work_dir }}/conf"
 
-consul_template_version: 0.15.0
+consul_template_version: 0.14.0
 consul_template_pkg:     "consul-template_{{ consul_template_version }}_linux_amd64.zip"
 consul_template_pkg_url: "https://releases.hashicorp.com/consul-template/{{ consul_template_version }}/{{ consul_template_pkg }}"
 

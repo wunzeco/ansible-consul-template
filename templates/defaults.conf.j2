@@ -50,8 +50,8 @@ auth {
 
 {% if consul_template_ssl %}
 ssl {
-  enabled = {{ consul_template_ssl.enabled||default(true)|bool|lower }}
-  verify = {{ consul_template_ssl.verify|default(false)||bool|lower }}
+  enabled = {{ consul_template_ssl.enabled|default(true)|bool|lower }}
+  verify = {{ consul_template_ssl.verify|default(false)|bool|lower }}
   cert = "{{ consul_template_ssl.cert }}"
 {% if consul_template_ssl.key|default(false) %}
   key = "{{ consul_template_ssl.key }}"
@@ -67,7 +67,7 @@ syslog {
 }
 {% endif -%}
 
-{% if consul_deduplicate %}
+{% if consul_template_deduplicate %}
 deduplicate {
   enabled = {{ consul_template_deduplicate.enabled|default(true)|bool|lower }}
   prefix = "{{ consul_template_deduplicate.prefix|default('consul-template/dedup/') }}"
