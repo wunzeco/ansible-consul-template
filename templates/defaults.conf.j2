@@ -68,7 +68,7 @@ syslog {
 }
 {% endif -%}
 
-{% if consul_template_syslog %}
+{% if consul_deduplicate %}
 deduplicate {
   enabled = {{ consul_template_deduplicate.enabled|bool|lower }}
   prefix = "{{ consul_template_deduplicate.prefix|default('consul-template/dedup/') }}"
