@@ -8,7 +8,6 @@ token = "{{ consul_template_token }}"
 retry = "{{ consul_template_retry }}"
 {% endif -%}
 
-reap = {{ consul_template_reap|bool|lower }}
 {% if consul_template_max_stale|default(false) %}
 max_stale = "{{ consul_template_max_stale }}"
 {% endif -%}
@@ -24,12 +23,12 @@ wait = "{{ consul_template_wait }}"
 vault {
   address = "{{ consul_template_vault.address }}"
   token = "{{ consult_template_vault.token }}"
-  renew = {{ consult_template_vault.token|bool|lower }}
+  renew = {{ consult_template_vault.token|default(true)|bool|lower }}
 
 {% if consul_template_vault.ssl|default(false) %}
   ssl {
-    enabled = {{ consul_template_vault.ssl.enabled|bool|lower }}
-    verify = {{ consul_template_vault.ssl.verify|bool|lower }}
+    enabled = {{ consul_template_vault.ssl.enabled|default(true)|bool|lower }}
+    verify = {{ consul_template_vault.ssl.verify|default(false)|bool|lower }}
     cert = "{{ consul_template_vault.ssl.cert }}"
 {% if consul_template_vault.ssl.key|default(false) %}
     key = "{{ consul_template_vault.ssl.key }}"
@@ -43,7 +42,7 @@ vault {
 
 {% if consul_template_auth %}
 auth {
-  enabled  = {{ consul_template_auth.enabled|bool|lower }}
+  enabled  = {{ consul_template_auth.enabled|default(true)|bool|lower }}
   username = "{{ consul_template_auth.username }}"
   password = "{{ consul_template_auth.password }}"
 }
@@ -51,8 +50,8 @@ auth {
 
 {% if consul_template_ssl %}
 ssl {
-  enabled = {{ consul_template_ssl.enabled|bool|lower }}
-  verify = {{ consul_template_ssl.verify|bool|lower }}
+  enabled = {{ consul_template_ssl.enabled||default(true)|bool|lower }}
+  verify = {{ consul_template_ssl.verify|default(false)||bool|lower }}
   cert = "{{ consul_template_ssl.cert }}"
 {% if consul_template_ssl.key|default(false) %}
   key = "{{ consul_template_ssl.key }}"
@@ -63,14 +62,14 @@ ssl {
 
 {% if consul_template_syslog %}
 syslog {
-  enabled = {{ consul_template_syslog.enabled|bool|lower }}
+  enabled = {{ consul_template_syslog.enabled|default(true)|bool|lower }}
   facility = "{{ consul_template_syslog.facility|default('LOCAL5') }}"
 }
 {% endif -%}
 
 {% if consul_deduplicate %}
 deduplicate {
-  enabled = {{ consul_template_deduplicate.enabled|bool|lower }}
+  enabled = {{ consul_template_deduplicate.enabled|default(true)|bool|lower }}
   prefix = "{{ consul_template_deduplicate.prefix|default('consul-template/dedup/') }}"
 }
 {% endif -%}
