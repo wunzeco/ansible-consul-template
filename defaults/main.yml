@@ -19,7 +19,7 @@ consul_template_consul_agent: "127.0.0.1:8500"
 consul_template_token:               # Consul API token
 consul_template_retry:     "5s"      # Default is 5s
 consul_template_max_stale: "30s"     # The maximum staleness of a query. Default is 1s
-consul_template_log_level: "info"    # debug, info, warn, err
+consul_template_log_level: "warn"    # debug, info, warn, err
 consul_template_wait:      "5s:10s"  # e.g. "5s:10s". The minimum and maximum amount of time to wait for 
                                      # the cluster to reach a consistent state before rendering a template
 consul_template_vault:  {}           # See example below
