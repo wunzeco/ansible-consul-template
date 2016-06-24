@@ -59,6 +59,12 @@ describe file("#{consul_template_conf_dir}/template-jenkins-8080-upstream.conf")
   it { should be_owned_by 'root' }
 end
 
+describe file('/etc/logrotate.d/consul-template') do
+  it { should be_file }
+  it { should be_mode 644 }
+  it { should be_owned_by 'root' }
+end
+
 describe service('consul-template') do
   it { should be_running }
 end
