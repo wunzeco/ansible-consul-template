@@ -62,7 +62,7 @@
   when: ansible_os_family|lower == 'redhat'
   notify: Restart consul-template
 
-- name: Create consult-template defaults config file
+- name: Create consul-template defaults config file
   template:
     src:   defaults.conf.j2
     dest:  "{{ consul_template_conf_dir }}/defaults.conf"
@@ -70,6 +70,14 @@
     group: root
     mode:  0644
   notify: Restart consul-template
+
+- name: Create consul-template logrotate config file
+  template:
+    src:   consul-template.logrotate.j2
+    dest:  "/etc/logrotate.d/consul-template"
+    owner: root
+    group: root
+    mode:  0644
 
 - name: Reload systemd manager configuration
   command: systemctl daemon-reload

@@ -1,0 +1,11 @@
+{{ consul_template_log_dir }}/consul-template.log
+{
+    rotate 6
+    daily
+    size 5M
+    missingok
+    dateext
+    copytruncate
+    notifempty
+    compress
+}
