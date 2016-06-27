@@ -6,7 +6,7 @@ consul_template_log_dir:  "/var/log/consul-template"
 consul_template_work_dir: "/opt/consul-template"
 consul_template_conf_dir: "{{ consul_template_work_dir }}/conf"
 
-consul_template_version: 0.14.0
+consul_template_version: 0.15.0
 consul_template_pkg:     "consul-template_{{ consul_template_version }}_linux_amd64.zip"
 consul_template_pkg_url: "https://releases.hashicorp.com/consul-template/{{ consul_template_version }}/{{ consul_template_pkg }}"
 
@@ -20,7 +20,7 @@ consul_template_token:               # Consul API token
 consul_template_retry:     "5s"      # Default is 5s
 consul_template_max_stale: "30s"     # The maximum staleness of a query. Default is 1s
 consul_template_log_level: "warn"    # debug, info, warn, err
-consul_template_wait:      "5s:10s"  # e.g. "5s:10s". The minimum and maximum amount of time to wait for 
+consul_template_wait:                # e.g. "5s:10s". The minimum and maximum amount of time to wait for 
                                      # the cluster to reach a consistent state before rendering a template
 consul_template_vault:  {}           # See example below
 consul_template_auth:   {}           # See example below
