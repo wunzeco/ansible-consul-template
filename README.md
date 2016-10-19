@@ -34,6 +34,15 @@ Ansible role to install, configure and run consul-template as a service.
 ```
 
 
+## Testing
+
+To run this role's integration tests
+
+```
+kitchen test
+```
+
+
 ## Dependencies
 
 none
