@@ -31,13 +31,13 @@
       when: ansible_os_family|lower == 'redhat'
 
     - name: Start jenkins container
-      docker:
+      docker_container:
         name:  jenkins
         image: "jenkins:1.651.1"
-        state: running
-        publish_all_ports: true
+        published_ports: "all"
         env:
           SERVICE_NAME: jenkins
+        state: started
       register: j
 
     - name: Delay a few seconds to allow jenkins container start
@@ -50,25 +50,55 @@
 
   pre_tasks:
     - name: Create nginx consul templates directory
-      file: path=/data/nginx/templates recurse=yes state=directory
+      file: path=/data/nginx/{{ item }} recurse=yes state=directory
+      with_items: [conf.d, servers, includes, upstreams, templates]
 
-    - name: Copy nginx include template config for jenkins
+    - name: Copy nginx config files for jenkins
       copy: 
-        src:  roles/ansible-consul-template/test/files/jenkins-8080-include.conf.ctmpl
-        dest: /data/nginx/templates/jenkins-8080-include.conf.ctmpl
+        src:  "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        - src:  roles/ansible-consul-template/test/files/nginx-default.conf
+          dest: /data/nginx/conf.d/default.conf
+        - src:  roles/ansible-consul-template/test/files/nginx-server.conf
+          dest: /data/nginx/servers/common.conf
 
-    - name: Copy nginx upstream template config for jenkins
+    - name: Copy nginx template config files for jenkins
       copy: 
-        src:  roles/ansible-consul-template/test/files/jenkins-8080-upstream.conf.ctmpl
-        dest: /data/nginx/templates/jenkins-8080-upstream.conf.ctmpl
+        src:  "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        - src:  roles/ansible-consul-template/test/files/jenkins-8080-include.conf.ctmpl
+          dest: /data/nginx/templates/jenkins-8080-include.conf.ctmpl
+        - src:  roles/ansible-consul-template/test/files/jenkins-8080-upstream.conf.ctmpl
+          dest: /data/nginx/templates/jenkins-8080-upstream.conf.ctmpl
+
+    - name: Start nginx container
+      docker_container:
+        name: nginx
+        image: nginx
+        published_ports:
+          - "80:80"
+          - "443:443"
+        volumes:
+          - "/data/nginx/conf.d:/etc/nginx/conf.d"
+          - "/data/nginx/servers:/etc/nginx/servers"
+          - "/data/nginx/includes:/etc/nginx/includes"
+          - "/data/nginx/upstreams:/etc/nginx/upstreams"
+          - "/data/nginx/logs:/var/log/nginx"
+        env:
+          SERVICE_NAME: nginx
+        state: started
 
   roles:
     - role: ansible-consul-template
       consul_template_template: 
         source: "/data/nginx/templates/jenkins-8080-include.conf.ctmpl"
-        destination: "/data/nginx/includes/common/jenkins-8080.conf"
+        destination: "/data/nginx/includes/jenkins-8080-include.conf"
+        command: "docker kill -s HUP nginx || true"
 
     - role: ansible-consul-template
       consul_template_template: 
         source: "/data/nginx/templates/jenkins-8080-upstream.conf.ctmpl"
-        destination: "/data/nginx/upstream/jenkins-8080.conf"
+        destination: "/data/nginx/upstreams/jenkins-8080-upstream.conf"
+        command: "docker kill -s HUP nginx || true"
