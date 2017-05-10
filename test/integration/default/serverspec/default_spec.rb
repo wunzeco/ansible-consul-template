@@ -68,3 +68,8 @@ end
 describe service('consul-template') do
   it { should be_running }
 end
+
+describe command('curl -s -o /dev/null -w "%{http_code}" http://localhost/jenkins/') do
+  its(:exit_status) { should eq 0 }
+  its(:stdout) { should match '200' }
+end
