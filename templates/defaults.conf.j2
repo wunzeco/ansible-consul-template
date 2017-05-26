@@ -22,8 +22,8 @@ wait = "{{ consul_template_wait }}"
 {% if consul_template_vault|default(false) %}
 vault {
   address = "{{ consul_template_vault.address }}"
-  token = "{{ consult_template_vault.token }}"
-  renew = {{ consult_template_vault.token|default(true)|bool|lower }}
+  token = "{{ consul_template_vault.token }}"
+  renew = {{ consul_template_vault.token|default(true)|bool|lower }}
 
 {% if consul_template_vault.ssl|default(false) %}
   ssl {
