@@ -35,7 +35,7 @@
 
 - name: Set installed variable if version of consul-template is installed
   set_fact: installed=true
-  when:  "{{ 'v' + consul_template_version in version.stderr.split(' ') }}"
+  when:  "'v' + consul_template_version in version.stderr.split(' ')"
 
 - name: consul-template package install
   include: install.yml
