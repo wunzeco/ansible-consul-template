@@ -52,6 +52,15 @@ do_stop()
         start-stop-daemon --stop --quiet --retry=INT/15/KILL/5 --pidfile $PIDFILE --startas $DAEMON
 }
 
+do_reload()
+{
+        # Return
+        #   0 if daemon has been reloaded
+        #   1 if daemon was not running
+        #   other if daemon could not be reloaded or a failure occurred
+        start-stop-daemon --stop --signal HUP --quiet --pidfile $PIDFILE --startas $DAEMON
+}
+
 
 case "$1" in
   start)
@@ -76,6 +85,17 @@ case "$1" in
         esac
 
         ;;
+  reload)
+        log_daemon_msg "Reloading $NAME"
+        do_reload
+        case "$?" in
+                0) log_end_msg 0 ;;
+                1) log_progress_msg "could not be reloaded"
+                   log_end_msg 0 ;;
+                *) log_end_msg 1 ;;
+        esac
+
+        ;;
   restart)
         $0 stop
         $0 start
@@ -84,7 +104,7 @@ case "$1" in
         status_of_proc -p $PIDFILE $DAEMON $NAME && exit 0 || exit $?
         ;;
   *)
-        echo "Usage: $SCRIPTNAME {start|stop|restart|status}" >&2
+        echo "Usage: $SCRIPTNAME {start|stop|restart|reload|status}" >&2
         exit 3
         ;;
 esac
