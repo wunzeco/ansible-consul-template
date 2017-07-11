@@ -69,7 +69,7 @@
     owner: root
     group: root
     mode:  0644
-  notify: Restart consul-template
+  notify: Reload consul-template
 
 - name: Create consul-template logrotate config file
   template:
