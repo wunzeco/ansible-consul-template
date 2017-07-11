@@ -5,6 +5,7 @@ driver:
 provisioner:
   name: ansible_playbook
   hosts: test-kitchen
+  requirements_path: requirements.yml
   require_pip: true
   require_ansible_repo: false
   ansible_version:  2.3.0.0
