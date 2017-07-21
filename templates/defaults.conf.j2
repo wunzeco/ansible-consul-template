@@ -16,6 +16,9 @@ consul {
     enabled = {{ consul_template_consul_retry.enabled|default(true)|bool|lower }}
     attempts = {{ consul_template_consul_retry.attempts|default(5) }}
     backoff = "{{ consul_template_consul_retry.backoff|default('250ms') }}"
+{% if consul_template_version|version_compare('0.18.5', '>=') %}
+    max_backoff = "{{ consul_template_consul_retry.max_backoff|default('1m') }}"
+{% endif %}
   }
 {% if consul_template_consul_ssl %}
   // This block configures the SSL options for connecting to the Consul server.
@@ -75,6 +78,9 @@ vault {
     enabled = {{ consul_template_vault_retry.enabled|default(true)|bool|lower }}
     attempts = {{ consul_template_vault_retry.attempts|default(5) }}
     backoff = "{{ consul_template_vault_retry.backoff|default('250ms') }}"
+{% if consul_template_version|version_compare('0.18.5', '>=') %}
+    max_backoff = "{{ consul_template_vault_retry.max_backoff|default('1m') }}"
+{% endif %}
   }
 
 {% if consul_template_vault_ssl|default(false) %}
