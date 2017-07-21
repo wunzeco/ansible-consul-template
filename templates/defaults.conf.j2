@@ -1,75 +1,317 @@
-consul = "{{ consul_template_consul_agent|default('127.0.0.1:8500') }}"
-
-{% if consul_template_token|default(false) %}
-token = "{{ consul_template_token }}"
+// This denotes the start of the configuration section for Consul. All values
+// contained in this section pertain to Consul.
+consul {
+  // This block specifies the basic authentication information to pass with the
+  // request. For more information on authentication, please see the Consul
+  // documentation.
+{% if consul_template_consul_auth %}
+  auth {
+    enabled  = {{ consul_template_consul_auth.enabled|default(true)|bool|lower }}
+    username = "{{ consul_template_consul_auth.username }}"
+    password = "{{ consul_template_consul_auth.password }}"
+  }
 {% endif -%}
 
-{% if consul_template_retry|default(false) %}
-retry = "{{ consul_template_retry }}"
+  // This is the address of the Consul agent. By default, this is
+  // 127.0.0.1:8500, which is the default bind and port for a local Consul
+  // agent. It is not recommended that you communicate directly with a Consul
+  // server, and instead communicate with the local Consul agent. There are many
+  // reasons for this, most importantly the Consul agent is able to multiplex
+  // connections to the Consul server and reduce the number of open HTTP
+  // connections. Additionally, it provides a "well-known" IP address for which
+  // clients can connect.
+  address = "{{ consul_template_consul_address|default('127.0.0.1:8500') }}"
+
+  // This is the ACL token to use when connecting to Consul. If you did not
+  // enable ACLs on your Consul cluster, you do not need to set this option.
+  //
+  // This option is also available via the environment variable CONSUL_TOKEN.
+{% if consul_template_consul_token|default(false) %}
+  token = "{{ consul_template_consul_token }}"
 {% endif -%}
 
-{% if consul_template_max_stale|default(false) %}
+  // This controls the retry behavior when an error is returned fro Consul.
+  // Consul Template is highly fault tolerant, meaning it does not exit in the
+  // face of failure. Instead, it uses exponential back-off and retry functions
+  // to wait for the cluster to become available, as is customary in distributed
+  // systems.
+  retry {
+    // This enabled retries. Retries are enabled by default, so this is
+    // redundant.
+    enabled = {{ consul_template_consul_retry.enabled|default(true)|bool|lower }}
+
+    // This specifies the number of attempts to make before giving up. Each
+    // attempt adds the exponential backoff sleep time. Setting this to a
+    // negative number will implement an unlimited number of retries.
+    attempts = {{ consul_template_consul_retry.attempts|default(5) }}
+
+    // This is the base amount of time to sleep between retry attempts. Each
+    // retry sleeps for an exponent of 2 longer than this base. For 5 retries,
+    // the sleep times would be: 250ms, 500ms, 1s, 2s, then 4s.
+    backoff = "{{ consul_template_consul_retry.backoff|default('250ms') }}"
+  }
+{% if consul_template_consul_ssl %}
+  // This block configures the SSL options for connecting to the Consul server.
+  ssl {
+    // This enables SSL. Specifying any option for SSL will also enable it.
+    enabled = {{ consul_template_consul_ssl.enabled|default(true)|bool|lower }}
+
+    // This enables SSL peer verification. The default value is "true", which
+    // will check the global CA chain to make sure the given certificates are
+    // valid. If you are using a self-signed certificate that you have not added
+    // to the CA chain, you may want to disable SSL verification. However, please
+    // understand this is a potential security vulnerability.
+    verify = {{ consul_template_consul_ssl.verify|default(false)|bool|lower }}
+
+    // This is the path to the certificate to use to authenticate. If just a
+    // certificate is provided, it is assumed to contain both the certificate and
+    // the key to convert to an X509 certificate. If both the certificate and
+    // key are specified, Consul Template will automatically combine them into an
+    // X509 certificate for you.
+    cert = "{{ consul_template_consul_ssl.cert }}"
+{% if consul_template_consul_ssl.key|default(false) %}
+    key = "{{ consul_template_consul_ssl.key }}"
+{% endif %}
+
+    // This is the path to the certificate authority to use as a CA. This is
+    // useful for self-signed certificates or for organizations using their own
+    // internal certificate authority.
+    ca_cert = "{{ consul_template_consul_ssl.ca_cert|default('') }}"
+
+    // This is the path to a directory of PEM-encoded CA cert files. If both
+    // `ca_cert` and `ca_path` is specified, `ca_cert` is preferred.
+    ca_path = "{{ consul_template_consul_ssl.ca_path|default('') }}"
+
+    // This sets the SNI server name to use for validation.
+    server_name = "{{ consul_template_consul_ssl.server_name|default('my-server.com') }}"
+  }
+{% endif -%}
+}
+
+// This is the signal to listen for to trigger a reload event. The default
+// value is shown below. Setting this value to the empty string will cause CT
+// to not listen for any reload signals.
+reload_signal = "{{ consul_template_reload_signal|default('SIGHUP') }}"
+
+// This is the signal to listen for to trigger a core dump event. The default
+// value is shown below. Setting this value to the empty string will cause CT
+// to not listen for any core dump signals.
+dump_signal = "{{ consul_template_dump_signal|default('SIGQUIT') }}"
+
+// This is the signal to listen for to trigger a graceful stop. The default
+// value is shown below. Setting this value to the empty string will cause CT
+// to not listen for any graceful stop signals.
+kill_signal = "{{ consul_template_kill_signal|default('SIGINT') }}"
+
+// This is customization around the environment in which template commands are
+// executed. See the "exec" block for more information on the specific
+// configuration options.
+env {
+  // ...
+{% for key,value in consul_template_env.iteritems() %}
+{#- value is BOOLEAN or NUMBER #}
+{% if value|string == 'True' or value|string == 'False' of value is number %}
+  {{ key }} = {{ value|lower }}
+{#- value is STRING #}
+{% elif value is string %}
+  {{ key }} = "{{ value }}"
+{# value is LIST #}
+{% elif value is iterable and value is not mapping and value %}
+  {{ key }} = [ "{{ value|join('", "') }}" ]
+{% endif %}
+{% endfor %}
+}
+
+// This is the maximum interval to allow "stale" data. By default, only the
+// Consul leader will respond to queries; any requests to a follower will
+// forward to the leader. In large clusters with many requests, this is not as
+// scalable, so this option allows any follower to respond to a query, so long
+// as the last-replicated data is within these bounds. Higher values result in
+// less cluster load, but are more likely to have outdated data.
 max_stale = "{{ consul_template_max_stale }}"
-{% endif -%}
 
+// This is the log level. If you find a bug in Consul Template, please enable
+// debug logs so we can help identify the issue. This is also available as a
+// command line flag.
 log_level = "{{ consul_template_log_level }}"
+
+// This is the path to store a PID file which will contain the process ID of the
+// Consul Template process. This is useful if you plan to send custom signals
+// to the process.
 pid_file = "{{ consul_template_pid_dir }}/consul-template.pid"
 
-{% if consul_template_wait|default(false) %}
-wait = "{{ consul_template_wait }}"
-{% endif -%}
+// This is the quiescence timers; it defines the minimum and maximum amount of
+// time to wait for the cluster to reach a consistent state before rendering a
+// template. This is useful to enable in systems that have a lot of flapping,
+// because it will reduce the the number of times a template is rendered.
+wait {
+  min = "{{ consul_template_wait.min|default('5s') }}"
+  max = "{{ consul_template_wait.max|default('10s') }}"
+}
 
-{% if consul_template_vault|default(false) %}
+{% if consul_template_vault_enable|default(false) %}
+// This denotes the start of the configuration section for Vault. All values
+// contained in this section pertain to Vault.
 vault {
-  address = "{{ consul_template_vault.address }}"
-  token = "{{ consult_template_vault.token }}"
-  renew = {{ consult_template_vault.token|default(true)|bool|lower }}
+  // This is the address of the Vault leader. The protocol (http(s)) portion
+  // of the address is required.
+  address = "{{ consul_template_vault_address }}"
 
-{% if consul_template_vault.ssl|default(false) %}
+  // This is the token to use when communicating with the Vault server.
+  // Like other tools that integrate with Vault, Consul Template makes the
+  // assumption that you provide it with a Vault token; it does not have the
+  // incorporated logic to generate tokens via Vault's auth methods.
+  //
+  // This value can also be specified via the environment variable VAULT_TOKEN.
+  token = "{{ consult_template_vault_token }}"
+
+  // This tells Consul Template that the provided token is actually a wrapped
+  // token that should be unwrapped using Vault's cubbyhole response wrapping
+  // before being used. Please see Vault's cubbyhole response wrapping
+  // documentation for more information.
+  unwrap_token = {{ consult_template_vault_unwrap_token|default(true)|bool|lower }}
+
+  // This option tells Consul Template to automatically renew the Vault token
+  // given. If you are unfamiliar with Vault's architecture, Vault requires
+  // tokens be renewed at some regular interval or they will be revoked. Consul
+  // Template will automatically renew the token at half the lease duration of
+  // the token. The default value is true, but this option can be disabled if
+  // you want to renew the Vault token using an out-of-band process.
+  //
+  // Note that secrets specified in a template (using {{secret}} for example)
+  // are always renewed, even if this option is set to false. This option only
+  // applies to the top-level Vault token itself.
+  renew_token = {{ consult_template_vault_renew_token|default(true)|bool|lower }}
+
+  // This section details the retry options for connecting to Vault. Please see
+  // the retry options in the Consul section for more information (they are the
+  // same).
+  retry {
+    enabled = {{ consul_template_vault_retry.enabled|default(true)|bool|lower }}
+    attempts = {{ consul_template_vault_retry.attempts|default(5) }}
+    backoff = "{{ consul_template_vault_retry.backoff|default('250ms') }}"
+  }
+
+{% if consul_template_vault_ssl|default(false) %}
+  // This section details the SSL options for connecting to the Vault server.
+  // Please see the SSL options in the Consul section for more information (they
+  // are the same).
   ssl {
-    enabled = {{ consul_template_vault.ssl.enabled|default(true)|bool|lower }}
-    verify = {{ consul_template_vault.ssl.verify|default(false)|bool|lower }}
-    cert = "{{ consul_template_vault.ssl.cert }}"
-{% if consul_template_vault.ssl.key|default(false) %}
-    key = "{{ consul_template_vault.ssl.key }}"
+    enabled = {{ consul_template_vault_ssl.enabled|default(true)|bool|lower }}
+    verify = {{ consul_template_vault_ssl.verify|default(false)|bool|lower }}
+    cert = "{{ consul_template_vault_ssl.cert }}"
+{% if consul_template_vault_ssl.key|default(false) %}
+    key = "{{ consul_template_vault_ssl.key }}"
 {% endif %}
-    ca_cert = "{{ consul_template_vault.ssl.ca_cert }}"
+    ca_cert = "{{ consul_template_vault_ssl.ca_cert|default('') }}"
+    ca_path = "{{ consul_template_vault_ssl.ca_path|default('') }}"
+    server_name = "{{ consul_template_vault_ssl.server_name|default('my-server.com') }}"
   }
 {% endif -%}
 
 }
 {% endif -%}
 
-{% if consul_template_auth %}
-auth {
-  enabled  = {{ consul_template_auth.enabled|default(true)|bool|lower }}
-  username = "{{ consul_template_auth.username }}"
-  password = "{{ consul_template_auth.password }}"
-}
-{% endif -%}
-
-{% if consul_template_ssl %}
-ssl {
-  enabled = {{ consul_template_ssl.enabled|default(true)|bool|lower }}
-  verify = {{ consul_template_ssl.verify|default(false)|bool|lower }}
-  cert = "{{ consul_template_ssl.cert }}"
-{% if consul_template_ssl.key|default(false) %}
-  key = "{{ consul_template_ssl.key }}"
-{% endif %}
-  ca_cert = "{{ consul_template_ssl.ca_cert }}"
-}
-{% endif -%}
-
 {% if consul_template_syslog %}
+// This block defines the configuration for connecting to a syslog server for
+// logging.
 syslog {
+  // This enables syslog logging. Specifying any other option also enables
+  // syslog logging.
   enabled = {{ consul_template_syslog.enabled|default(true)|bool|lower }}
+
+  // This is the name of the syslog facility to log to.
   facility = "{{ consul_template_syslog.facility|default('LOCAL5') }}"
 }
 {% endif -%}
 
 {% if consul_template_deduplicate %}
+// This block defines the configuration for de-duplication mode. Please see the
+// de-duplication mode documentation later in the README for more information
+// on how de-duplication mode operates.
 deduplicate {
+  // This enables de-duplication mode. Specifying any other options also enables
+  // de-duplication mode.
   enabled = {{ consul_template_deduplicate.enabled|default(true)|bool|lower }}
+
+  // This is the prefix to the path in Consul's KV store where de-duplication
+  // templates will be pre-rendered and stored.
   prefix = "{{ consul_template_deduplicate.prefix|default('consul-template/dedup/') }}"
+}
+{% endif -%}
+
+// This block defines the configuration for exec mode. Please see the exec mode
+// documentation at the bottom of this README for more information on how exec
+// mode operates and the caveats of this mode.
+{% if consul_template_exec|default(false) %}
+exec {
+  // This is the command to exec as a child process. There can be only one
+  // command per Consul Template process.
+  command = "{{ consul_template_exec.command }}"
+
+  // This is a random splay to wait before killing the command. The default
+  // value is 0 (no wait), but large clusters should consider setting a splay
+  // value to prevent all child processes from reloading at the same time when
+  // data changes occur. When this value is set to non-zero, Consul Template
+  // will wait a random period of time up to the splay value before reloading
+  // or killing the child process. This can be used to prevent the thundering
+  // herd problem on applications that do not gracefully reload.
+  splay = "{{ consul_template_exec.splay|default('5s') }}"
+
+{% if consul_template_exec.env|default(false) %}
+  env {
+    // This specifies if the child process should not inherit the parent
+    // process's environment. By default, the child will have full access to the
+    // environment variables of the parent. Setting this to true will send only
+    // the values specified in `custom_env` to the child process.
+    pristine = {{ consul_template_exec.env.pristine|default(false)|bool|lower }}
+
+    // This specifies additional custom environment variables in the form shown
+    // below to inject into the child's runtime environment. If a custom
+    // environment variable shares its name with a system environment variable,
+    // the custom environment variable takes precedence. Even if pristine,
+    // whitelist, or blacklist is specified, all values in this option
+    // are given to the child process.
+    custom = [ "{{ consul_template_exec.env.custom|join('", "') }}" ]
+
+    // This specifies a list of environment variables to exclusively include in
+    // the list of environment variables exposed to the child process. If
+    // specified, only those environment variables matching the given patterns
+    // are exposed to the child process. These strings are matched using Go's
+    // glob function, so wildcards are permitted.
+    whitelist = [ "{{ consul_template_exec.env.whitelist|join('", "') }}" ]
+
+    // This specifies a list of environment variables to exclusively prohibit in
+    // the list of environment variables exposed to the child process. If
+    // specified, any environment variables matching the given patterns will not
+    // be exposed to the child process, even if they are whitelisted. The values
+    // in this option take precedence over the values in the whitelist.
+    // These strings are matched using Go's glob function, so wildcards are
+    // permitted.
+    blacklist = [ "{{ consul_template_exec.env.blacklist|join('", "') }}" ]
+  }
+{% endif -%}
+
+  // This defines the signal that will be sent to the child process when a
+  // change occurs in a watched template. The signal will only be sent after the
+  // process is started, and the process will only be started after all
+  // dependent templates have been rendered at least once. The default value is
+  // nil, which tells Consul Template to stop the child process and spawn a new
+  // one instead of sending it a signal. This is useful for legacy applications
+  // or applications that cannot properly reload their configuration without a
+  // full reload.
+  reload_signal = "{{ consul_template_exec.reload_signal|default('') }}"
+
+  // This defines the signal sent to the child process when Consul Template is
+  // gracefully shutting down. The application should begin a graceful cleanup.
+  // If the application does not terminate before the `kill_timeout`, it will
+  // be terminated (effectively "kill -9"). The default value is "SIGTERM".
+  kill_signal = "{{ consul_template_exec.kill_signal|default('SIGINT') }}"
+
+  // This defines the amount of time to wait for the child process to gracefully
+  // terminate when Consul Template exits. After this specified time, the child
+  // process will be force-killed (effectively "kill -9"). The default value is
+  // "30s".
+  kill_timeout = "{{ consul_template_exec.kill_timeout|default('2s') }}"
 }
 {% endif -%}
