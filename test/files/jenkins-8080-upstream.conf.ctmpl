@@ -1,6 +1,6 @@
-{{if service "jenkins-8080" "any" }}
+{{if service "jenkins-8080" }}
 upstream jenkins-8080 {
-    {{range service "jenkins-8080" "any" }}
+    {{range service "jenkins-8080" }}
     server  {{.Address}}:{{.Port}};
     {{end}}
 }
