@@ -39,6 +39,7 @@ do_start()
                 --start \
                 --quiet \
                 --oknodo \
+                --make-pidfile \
                 --pidfile $PIDFILE \
                 --startas $DAEMON  -- $CONSUL_TEMPLATE_OPTIONS > $LOGFILE 2>&1 &
 }
