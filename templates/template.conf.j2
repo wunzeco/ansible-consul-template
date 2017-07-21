@@ -14,8 +14,7 @@ template {
   // This is the maximum amount of time to wait for the optional command to
   // return. Default is 30s.
   command_timeout = "{{ consul_template_template.command_timeout }}"
-{% endif -%}
-
+{% endif %}
   perms = {{ consul_template_template.perms|default('0644') }}
   backup = {{ consul_template_template.backup|default(true)|bool|lower }}
 {% if consul_template_template.left_delimiter|default(false) %}
