@@ -3,6 +3,11 @@ consul-template
 
 Ansible role to install, configure and run consul-template as a service.
 
+> **Breaking Changes**:
+>    * Latest version of this role now ONLY supports consul-template v0.18+.
+>    * Please use c841ac8641b309b83073d462a42cb3234d1772ab, for support of 
+>      consul-template v0.16 and earlier.
+
 
 ## Example
 
@@ -18,8 +23,8 @@ Ansible role to install, configure and run consul-template as a service.
 - hosts: myhost
 
   vars:
-    consul_template_version: 0.12.1
-    consul_template_consul_agent: "<consulhost:consulport>"
+    consul_template_version: 0.18.5
+    consul_template_consul_address: "<consulhost:consulport>"
     
   roles:
     - role: wunzeco.consul-template
