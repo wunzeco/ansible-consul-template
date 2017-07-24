@@ -2,19 +2,32 @@ template {
   source = "{{ consul_template_template.source }}"
   destination = "{{ consul_template_template.destination }}"
 
+{% if consul_template_template.contents|default(false) %}
+  contents = "{{ consul_template_template.contents }}"
+{% endif -%}
+
 {% if consul_template_template.command|default(false) %}
   command = "{{ consul_template_template.command }}"
 {% endif -%}
 
 {% if consul_template_template.command_timeout|default(false) %}
-  command_timeout = "{{ consul_template_command_timeout }}"
+  // This is the maximum amount of time to wait for the optional command to
+  // return. Default is 30s.
+  command_timeout = "{{ consul_template_template.command_timeout }}"
+{% endif %}
+  perms = {{ consul_template_template.perms|default('0644') }}
+  backup = {{ consul_template_template.backup|default(true)|bool|lower }}
+{% if consul_template_template.left_delimiter|default(false) %}
+  left_delimiter  = "{{ consul_template_template.left_delimiter }}"
+{% endif -%}
+{% if consul_template_template.left_delimiter|default(false) %}
+  right_delimiter  = "{{ consul_template_template.right_delimiter }}"
 {% endif -%}
 
-{% if consul_template_template.perms|default(false) %}
-  perms = {{ consul_template_template.perms }}
-{% endif -%}
-
-{% if consul_template_template.backup|default(false) %}
-  backup = {{ consul_template_template.backup|bool|lower }}
+{% if consul_template_template.wait|default(false) %}
+  wait {
+    min = "{{ consul_template_template.wait.min|default('2s') }}"
+    max = "{{ consul_template_template.wait.max|default('10s') }}"
+  }
 {% endif -%}
 }

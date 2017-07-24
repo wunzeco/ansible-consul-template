@@ -1,62 +1,102 @@
-consul = "{{ consul_template_consul_agent|default('127.0.0.1:8500') }}"
-
-{% if consul_template_token|default(false) %}
-token = "{{ consul_template_token }}"
-{% endif -%}
-
-{% if consul_template_retry|default(false) %}
-retry = "{{ consul_template_retry }}"
-{% endif -%}
-
-{% if consul_template_max_stale|default(false) %}
-max_stale = "{{ consul_template_max_stale }}"
-{% endif -%}
-
-log_level = "{{ consul_template_log_level }}"
-pid_file = "{{ consul_template_pid_dir }}/consul-template.pid"
-
-{% if consul_template_wait|default(false) %}
-wait = "{{ consul_template_wait }}"
-{% endif -%}
-
-{% if consul_template_vault|default(false) %}
-vault {
-  address = "{{ consul_template_vault.address }}"
-  token = "{{ consult_template_vault.token }}"
-  renew = {{ consult_template_vault.token|default(true)|bool|lower }}
-
-{% if consul_template_vault.ssl|default(false) %}
-  ssl {
-    enabled = {{ consul_template_vault.ssl.enabled|default(true)|bool|lower }}
-    verify = {{ consul_template_vault.ssl.verify|default(false)|bool|lower }}
-    cert = "{{ consul_template_vault.ssl.cert }}"
-{% if consul_template_vault.ssl.key|default(false) %}
-    key = "{{ consul_template_vault.ssl.key }}"
-{% endif %}
-    ca_cert = "{{ consul_template_vault.ssl.ca_cert }}"
+consul {
+{% if consul_template_consul_auth %}
+  auth {
+    enabled  = {{ consul_template_consul_auth.enabled|default(true)|bool|lower }}
+    username = "{{ consul_template_consul_auth.username }}"
+    password = "{{ consul_template_consul_auth.password }}"
   }
 {% endif -%}
 
-}
+  address = "{{ consul_template_consul_address|default('127.0.0.1:8500') }}"
+{% if consul_template_consul_token|default(false) %}
+  token = "{{ consul_template_consul_token }}"
 {% endif -%}
 
-{% if consul_template_auth %}
-auth {
-  enabled  = {{ consul_template_auth.enabled|default(true)|bool|lower }}
-  username = "{{ consul_template_auth.username }}"
-  password = "{{ consul_template_auth.password }}"
-}
-{% endif -%}
-
-{% if consul_template_ssl %}
-ssl {
-  enabled = {{ consul_template_ssl.enabled|default(true)|bool|lower }}
-  verify = {{ consul_template_ssl.verify|default(false)|bool|lower }}
-  cert = "{{ consul_template_ssl.cert }}"
-{% if consul_template_ssl.key|default(false) %}
-  key = "{{ consul_template_ssl.key }}"
+  retry {
+    enabled = {{ consul_template_consul_retry.enabled|default(true)|bool|lower }}
+    attempts = {{ consul_template_consul_retry.attempts|default(5) }}
+    backoff = "{{ consul_template_consul_retry.backoff|default('250ms') }}"
+{% if consul_template_version|version_compare('0.18.5', '>=') %}
+    max_backoff = "{{ consul_template_consul_retry.max_backoff|default('1m') }}"
 {% endif %}
-  ca_cert = "{{ consul_template_ssl.ca_cert }}"
+  }
+{% if consul_template_consul_ssl %}
+  // This block configures the SSL options for connecting to the Consul server.
+  ssl {
+    enabled = {{ consul_template_consul_ssl.enabled|default(true)|bool|lower }}
+    verify = {{ consul_template_consul_ssl.verify|default(false)|bool|lower }}
+    cert = "{{ consul_template_consul_ssl.cert }}"
+{% if consul_template_consul_ssl.key|default(false) %}
+    key = "{{ consul_template_consul_ssl.key }}"
+{% endif %}
+    ca_cert = "{{ consul_template_consul_ssl.ca_cert|default('') }}"
+    ca_path = "{{ consul_template_consul_ssl.ca_path|default('') }}"
+    server_name = "{{ consul_template_consul_ssl.server_name|default('my-server.com') }}"
+  }
+{% endif -%}
+}
+
+reload_signal = "{{ consul_template_reload_signal|default('SIGHUP') }}"
+
+// WARN: dump_signal flagged as invalid key by v0.18.0 but features in documentation
+//dump_signal = "{{ consul_template_dump_signal|default('SIGQUIT') }}"
+kill_signal = "{{ consul_template_kill_signal|default('SIGINT') }}"
+
+{% if consul_template_exec|default(false) %}
+// WARN: env flagged as invalid key by v0.18.0 but features in documentation
+env {
+{% for key,value in consul_template_env.iteritems() %}
+{#- value is BOOLEAN or NUMBER #}
+{% if value|string == 'True' or value|string == 'False' or value is number %}
+  {{ key }} = {{ value|lower }}
+{#- value is STRING #}
+{% elif value is string %}
+  {{ key }} = "{{ value }}"
+{# value is LIST #}
+{% elif value is iterable and value is not mapping and value %}
+  {{ key }} = [ "{{ value|join('", "') }}" ]
+{% endif %}
+{% endfor %}
+}
+{% endif -%}
+
+max_stale = "{{ consul_template_max_stale }}"
+log_level = "{{ consul_template_log_level }}"
+pid_file = "{{ consul_template_pid_dir }}/consul-template.pid"
+wait {
+  min = "{{ consul_template_wait.min|default('5s') }}"
+  max = "{{ consul_template_wait.max|default('10s') }}"
+}
+
+{% if consul_template_vault_enable|default(false) %}
+vault {
+  address = "{{ consul_template_vault_address }}"
+  token = "{{ consult_template_vault_token }}"
+  unwrap_token = {{ consult_template_vault_unwrap_token|default(true)|bool|lower }}
+  renew_token = {{ consult_template_vault_renew_token|default(true)|bool|lower }}
+  retry {
+    enabled = {{ consul_template_vault_retry.enabled|default(true)|bool|lower }}
+    attempts = {{ consul_template_vault_retry.attempts|default(5) }}
+    backoff = "{{ consul_template_vault_retry.backoff|default('250ms') }}"
+{% if consul_template_version|version_compare('0.18.5', '>=') %}
+    max_backoff = "{{ consul_template_vault_retry.max_backoff|default('1m') }}"
+{% endif %}
+  }
+
+{% if consul_template_vault_ssl|default(false) %}
+  ssl {
+    enabled = {{ consul_template_vault_ssl.enabled|default(true)|bool|lower }}
+    verify = {{ consul_template_vault_ssl.verify|default(false)|bool|lower }}
+    cert = "{{ consul_template_vault_ssl.cert }}"
+{% if consul_template_vault_ssl.key|default(false) %}
+    key = "{{ consul_template_vault_ssl.key }}"
+{% endif %}
+    ca_cert = "{{ consul_template_vault_ssl.ca_cert|default('') }}"
+    ca_path = "{{ consul_template_vault_ssl.ca_path|default('') }}"
+    server_name = "{{ consul_template_vault_ssl.server_name|default('my-server.com') }}"
+  }
+{% endif -%}
+
 }
 {% endif -%}
 
@@ -71,5 +111,25 @@ syslog {
 deduplicate {
   enabled = {{ consul_template_deduplicate.enabled|default(true)|bool|lower }}
   prefix = "{{ consul_template_deduplicate.prefix|default('consul-template/dedup/') }}"
+}
+{% endif -%}
+
+{% if consul_template_exec|default(false) %}
+exec {
+  command = "{{ consul_template_exec.command }}"
+  splay = "{{ consul_template_exec.splay|default('5s') }}"
+
+{% if consul_template_exec.env|default(false) %}
+  env {
+    pristine = {{ consul_template_exec.env.pristine|default(false)|bool|lower }}
+    custom = [ "{{ consul_template_exec.env.custom|join('", "') }}" ]
+    whitelist = [ "{{ consul_template_exec.env.whitelist|join('", "') }}" ]
+    blacklist = [ "{{ consul_template_exec.env.blacklist|join('", "') }}" ]
+  }
+{% endif -%}
+
+  reload_signal = "{{ consul_template_exec.reload_signal|default('') }}"
+  kill_signal = "{{ consul_template_exec.kill_signal|default('SIGINT') }}"
+  kill_timeout = "{{ consul_template_exec.kill_timeout|default('2s') }}"
 }
 {% endif -%}

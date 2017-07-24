@@ -1,4 +1,4 @@
-{{if service "jenkins-8080" "any" }}
+{{if service "jenkins-8080" }}
 location /jenkins {
   rewrite    /jenkins(.*)  $1 break;
   proxy_pass http://jenkins-8080;
