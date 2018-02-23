@@ -1,5 +1,7 @@
 ---
 
+- include_vars: "{{ ansible_os_family|lower }}.yml"
+
 - name: Install unzip | Debian
   apt: name=unzip state=present
   when: ansible_os_family|lower == 'debian'
@@ -48,18 +50,18 @@
     owner: root
     group: root
     mode:  0755
-  when: ansible_os_family|lower == 'debian'
+  when: ansible_service_mgr == 'upstart'
   notify: Restart consul-template
 
 - name: Create consul-template systemd service script
   template:
     src:   consul-template.service.j2
-    dest:  /usr/lib/systemd/system/consul-template.service
+    dest:  "{{ consul_template_systemd_units_dir }}/consul-template.service"
     owner: root
     group: root
     mode:  0755
   register: systemd
-  when: ansible_os_family|lower == 'redhat'
+  when: ansible_service_mgr == 'systemd'
   notify: Restart consul-template
 
 - name: Create consul-template defaults config file

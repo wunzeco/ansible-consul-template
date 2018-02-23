@@ -1,0 +1,3 @@
+---
+
+consul_template_systemd_units_dir: /lib/systemd/system

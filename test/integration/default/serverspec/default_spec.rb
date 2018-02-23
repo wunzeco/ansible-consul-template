@@ -6,7 +6,7 @@ consul_template_work_dir = '/opt/consul-template'
 consul_template_conf_dir = "#{consul_template_work_dir}/conf"
 
 
-%W( 
+%W(
   #{consul_template_bin_dir}
   #{consul_template_log_dir}
   #{consul_template_work_dir}
@@ -25,20 +25,19 @@ describe file("#{consul_template_bin_dir}/consul-template") do
   it { should be_owned_by 'root' }
 end
 
-if os[:family] =~ /ubuntu|debian/
-  describe file('/etc/init.d/consul-template') do
-    it { should be_file }
-    it { should be_mode 755 }
-    it { should be_owned_by 'root' }
-  end
+service_startup_file = '/lib/systemd/system/consul.service'
+service_startup_file_mode = 644
+if os[:family] =~ /ubuntu|debian/ and os[:release] == '14.04'
+  service_startup_file = '/etc/init.d/consul-template'
+  service_startup_file_mode = 755
+elsif os[:family] =~ /centos|redhat/
+  service_startup_file = '/usr/lib/systemd/system/consul.service'
 end
 
-if os[:family] =~ /centos|redhat/
-  describe file('/usr/lib/systemd/system/consul-template.service') do
-    it { should be_file }
-    it { should be_mode 755 }
-    it { should be_owned_by 'root' }
-  end
+describe file(service_startup_file) do
+  it { should be_file }
+  it { should be_mode service_startup_file_mode }
+  it { should be_owned_by 'root' }
 end
 
 describe file("#{consul_template_conf_dir}/defaults.conf") do
