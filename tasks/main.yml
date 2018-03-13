@@ -90,4 +90,4 @@
 
 - name: consul-template template create
   include: template-config.yml
-  when: consul_template_template
+  when: consul_template_template|default({})
