@@ -59,7 +59,7 @@
     dest:  "{{ consul_template_systemd_units_dir }}/consul-template.service"
     owner: root
     group: root
-    mode:  0755
+    mode:  0644
   register: systemd
   when: ansible_service_mgr == 'systemd'
   notify: Restart consul-template
