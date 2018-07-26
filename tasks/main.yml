@@ -40,7 +40,7 @@
   when:  "'v' + consul_template_version in version.stderr.split(' ')"
 
 - name: consul-template package install
-  include: install.yml
+  include_tasks: install.yml
   when: not installed|default(false)
 
 - name: Create consul-template init script
@@ -89,5 +89,5 @@
   service: name=consul-template enabled=yes state=started
 
 - name: consul-template template create
-  include: template-config.yml
+  include_tasks: template-config.yml
   when: consul_template_template|default({})
