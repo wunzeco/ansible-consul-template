@@ -1,4 +1,4 @@
-require 'spec_helper'
+require '/tmp/kitchen/spec/spec_helper.rb'
 
 consul_template_bin_dir  = '/usr/local/bin'
 consul_template_log_dir  = '/var/log/consul-template'

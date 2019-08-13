@@ -1,3 +1,14 @@
-- src: wunzeco.docker
-- src: wunzeco.consul
-- src: wunzeco.registrator
+- src: git@github.com:o2-priority/ansible-docker.git
+  version: master
+  scm: git
+  name: o2-priority.docker
+
+- src: git@github.com:o2-priority/ansible-consul.git
+  version: master
+  scm: git
+  name: o2-priority.consul
+
+- src: git@github.com:o2-priority/ansible-registrator.git
+  version: master
+  scm: git
+  name: o2-priority.registrator

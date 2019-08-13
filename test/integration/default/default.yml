@@ -16,19 +16,16 @@
     nginx_docker_consul_host: "{{ ansible_default_ipv4.address }}"
     nginx_docker_consul_port: 8500
 
+    docker_package_version: '*'
+
   roles:
-    - wunzeco.consul
-    - wunzeco.docker
-    - wunzeco.registrator
+    - o2-priority.consul
+    - o2-priority.docker
+    - o2-priority.registrator
 
   post_tasks:
     - name: Install curl | Debian
-      apt: name=curl state=present
-      when: ansible_os_family|lower == 'debian'
-
-    - name: Install curl | RedHat
-      yum: name=curl state=present
-      when: ansible_os_family|lower == 'redhat'
+      package: name=curl state=present
 
     - name: Start jenkins container
       docker_container:
